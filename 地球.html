@@ -91,9 +91,9 @@
     const earthGeometry = new THREE.SphereGeometry(50, 50, 50)
     const earthMaterial = new THREE.MeshPhongMaterial({
       shininess: 5,
-      map: textureLoader.load(`./imgs/world-${index || 1}.jpg`),
-      specularMap: textureLoader.load(`./imgs/world-${index || 1}.jpg`),
-      normalMap: textureLoader.load(`./imgs/world-${index || 1}.jpg`),
+      map: textureLoader.load(`./imgs/worldmap${index || 1}.jpg`),
+      specularMap: textureLoader.load(`./imgs/worldmap${index || 1}.jpg`),
+      normalMap: textureLoader.load(`./imgs/worldmap${index || 1}.jpg`),
     })
     const earth = new THREE.Mesh(earthGeometry, earthMaterial)
     scene.add(earth)

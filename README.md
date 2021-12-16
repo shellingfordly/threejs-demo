@@ -1,6 +1,6 @@
 # Three.js Demos
 
-一些学习 three.js 的 demo
+一些学习 three.js 的 demo，[预览地址](https://shellingfordly.github.io/threejs-demo/)
 
 - [点](https://shellingfordly.github.io/threejs-demo/点.html)
 - [三角形](https://shellingfordly.github.io/threejs-demo/三角形.html)
