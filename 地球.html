@@ -3,64 +3,141 @@
 <script src="./three.js"></script>
 <script src="./OrbitControls.js"></script>
 <script src="./node_modules/three/examples/js/renderers/CSS2DRenderer.js"></script>
-
 <style>
   html,
   body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    background-color: #b9d3ff;
+  }
+
+  #app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .select-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+  }
+
+  .loading-container {
+    font-size: 50px;
   }
 </style>
+<!-- world img url :   https://wallpaperaccess.com/world-map-4k -->
 
-<body></body>
+<body>
+  <div id="app" v-scope @vue:mounted="mounted">
+    <div class="select-container">
+      <span>切换地图</span>
+      <select v-model="index" @change="change">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </div>
+    <div class="loading-container" v-if="!domElement">
+      Loading...
+    </div>
+  </div>
+
+</body>
+
+<script type="module">
+  import { createApp } from 'https://unpkg.com/petite-vue?module'
+  createApp({
+    index: 1,
+    domElement: null,
+    mounted() {
+      this.domElement = init(this.index)
+    },
+    change(event) {
+      app.removeChild(this.domElement)
+      this.domElement = null
+      setTimeout(() => {
+        this.domElement = init(this.index)
+      }, 500)
+    }
+  }).mount()
+</script>
+
 
 <script>
+  function init(index) {
+    const clock = new THREE.Clock()
+    // 实例化纹理加载器
+    const textureLoader = new THREE.TextureLoader()
 
-  const clock = new THREE.Clock()
-  // 实例化纹理加载器
-  const textureLoader = new THREE.TextureLoader()
-  console.log(textureLoader.load);
+    const scene = new THREE.Scene()
 
-  const scene = new THREE.Scene()
+    const moonGeometry = new THREE.SphereGeometry(5, 30, 30)
+    const moonMaterial = new THREE.MeshPhongMaterial({
+      map: textureLoader.load('./imgs/moon.jpg')
+    })
+    const moon = new THREE.Mesh(moonGeometry, moonMaterial)
+    scene.add(moon)
 
-  const boxGeometry = new THREE.SphereGeometry(50, 50, 50)
-  const boxMaterial = new THREE.MeshPhongMaterial({
-    map: textureLoader.load('./imgs/world.jpg')
-  })
-  const box = new THREE.Mesh(boxGeometry, boxMaterial)
-  scene.add(box)
+    const earthGeometry = new THREE.SphereGeometry(50, 50, 50)
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      shininess: 5,
+      map: textureLoader.load(`./imgs/world-${index || 1}.jpg`),
+      specularMap: textureLoader.load(`./imgs/world-${index || 1}.jpg`),
+      normalMap: textureLoader.load(`./imgs/world-${index || 1}.jpg`),
+    })
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial)
+    scene.add(earth)
 
-  const pointLight = new THREE.PointLight()
-  pointLight.position.set(200, 200, 100)
-  pointLight.castShadow = true
-  scene.add(pointLight)
+    const pointLight = new THREE.PointLight(0xaaaaaa)
+    pointLight.position.set(200, 200, 100)
+    pointLight.castShadow = true
+    scene.add(pointLight)
 
 
-  const ambient = new THREE.AmbientLight(0xcccccc);
-  ambient.box
-  scene.add(ambient);
+    const ambient = new THREE.AmbientLight(0xcccccc);
+    scene.add(ambient);
 
-  const axesHelper = new THREE.AxesHelper(250);
-  scene.add(axesHelper);
+    // const axesHelper = new THREE.AxesHelper(250);
+    // scene.add(axesHelper);
 
-  const k = window.innerWidth / window.innerHeight;
-  const s = 100;
-  const camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
-  camera.position.set(100, 100, 200);
-  camera.lookAt(scene.position);
+    const k = window.innerWidth / window.innerHeight;
+    const s = 100;
+    const camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
+    camera.position.set(100, 100, 200);
+    camera.lookAt(scene.position);
 
-  const renderer = new THREE.WebGLRenderer();
-  // 设置像素比列
-  renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setSize(window.document.body.clientWidth, window.document.body.clientHeight);
-  renderer.setClearColor(0xb9d3ff, 1);
-  renderer.shadowMap.enabled = true
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true // 透明度
+    });
+    // 设置像素比列
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(window.document.body.clientWidth, window.document.body.clientHeight);
+    renderer.setClearColor(0xb9d3ff, 1);
+    renderer.shadowMap.enabled = true
 
-  document.body.appendChild(renderer.domElement);
-  function render() { renderer.render(scene, camera); }
-  render();
-  const controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.addEventListener('change', render);
+    app.appendChild(renderer.domElement);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+    function animation() {
+      const elapsed = clock.getElapsedTime()
+      moon.position.set(Math.sin(elapsed) * 100, 0, Math.cos(elapsed) * 100)
+      const axis = new THREE.Vector3(0, 1, 0)
+      earth.rotateOnAxis(axis, elapsed * Math.PI / 1000)
+      renderer.render(scene, camera);
+      requestAnimationFrame(animation)
+    }
+    animation()
+
+    return renderer.domElement
+  }
 </script>
